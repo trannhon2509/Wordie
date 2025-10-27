@@ -11,8 +11,21 @@ builder.AddWebServices();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Parse command-line args for seeding options
+var seedArg = args.Any(a => a.Equals("--seed", StringComparison.OrdinalIgnoreCase));
+var forceArg = args.Any(a => a.Equals("--force", StringComparison.OrdinalIgnoreCase));
+bool? resetOverride = null;
+if (args.Any(a => a.Equals("--no-reset", StringComparison.OrdinalIgnoreCase))) resetOverride = false;
+if (args.Any(a => a.Equals("--reset", StringComparison.OrdinalIgnoreCase))) resetOverride = true;
+
+if (seedArg)
 {
+    // Run seeder according to CLI flags
+    await app.InitialiseDatabaseAsync(forceArg, resetOverride);
+}
+else if (app.Environment.IsDevelopment())
+{
+    // Default behaviour for local development
     await app.InitialiseDatabaseAsync();
 }
 else
